@@ -65,7 +65,7 @@ ExternalProject_Add(z3
   GIT_TAG ${Z3_TAG}
   BUILD_IN_SOURCE 1
   INSTALL_DIR ${CMAKE_BINARY_DIR}/run
-  CONFIGURE_COMMAND env CC=${CMAKE_C_COMPILER} CXX=${CMAKE_CXX_COMPILER}
+  CONFIGURE_COMMAND env CC=${CMAKE_C_COMPILER} CXX=${CMAKE_CXX_COMPILER} CXXFLAGS=-Wno-template-body
   ./configure -p <INSTALL_DIR> -b build --staticlib ${Z3_DEBUG}
   BUILD_COMMAND make -j3 -C build
   INSTALL_COMMAND make -C build install

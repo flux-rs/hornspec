@@ -622,7 +622,7 @@ namespace ufo
       boost::tribool res =
 	z3l_to_tribool (Z3_solver_check_assumptions (ctx, solver,
 						     raw_av.size (),
-						     &raw_av[0]));
+						     raw_av.data ()));
       ctx.check_error ();
       return res;
     }
