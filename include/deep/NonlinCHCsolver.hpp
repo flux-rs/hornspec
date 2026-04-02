@@ -1358,8 +1358,10 @@ namespace ufo
         oldsmt = ruleManager.infile;
       }
 
-      string newsmt = oldsmt.substr(oldsmt.find_last_of("/"));
-      newsmt = "/tmp/" + newsmt.substr(0, newsmt.find_last_of("."));
+      auto slash_pos = oldsmt.find_last_of("/");
+      string basename = (slash_pos == string::npos) ? oldsmt : oldsmt.substr(slash_pos + 1);
+      auto dot_pos = basename.find_last_of(".");
+      string newsmt = "/tmp/" + (dot_pos == string::npos ? basename : basename.substr(0, dot_pos));
       newsmt += postfix + "_" + to_string(std::chrono::system_clock::now().time_since_epoch().count());
       newsmt += sygus ? ".sl" : ".smt2";
 
