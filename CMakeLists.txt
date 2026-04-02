@@ -1,8 +1,12 @@
-cmake_minimum_required(VERSION 2.8.11)
+cmake_minimum_required(VERSION 3.15)
 
-project (HornSpec)
-set (HornSpec_VERSION_MAJOR 1)
-set (HornSpec_VERSION_MINOR 0)
+if(POLICY CMP0167)
+  cmake_policy(SET CMP0167 NEW)
+endif()
+
+project(HornSpec VERSION 1.0 LANGUAGES C CXX)
+set(HornSpec_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
+set(HornSpec_VERSION_MINOR ${PROJECT_VERSION_MINOR})
 
 if (NOT PACKAGE_VERSION)
   set(PACKAGE_VERSION
@@ -40,19 +44,21 @@ set(CMAKE_FIND_LIBRARY_SUFFIXES ".a" ${CMAKE_FIND_LIBRARY_SUFFIXES})
 
 
 set (Boost_USE_STATIC_LIBS ON)
-set (BOOST_COMPONENTS system)
+# boost_system is header-only since Boost 1.69; no compiled component needed
+set (BOOST_COMPONENTS "")
 if (UNIT_TESTS)
-  set (BOOST_COMPONENTS ${BOOST_COMPONENTS} unit_test_framework)
+  list(APPEND BOOST_COMPONENTS unit_test_framework)
 endif()
-  find_package (Boost 1.71 REQUIRED COMPONENTS ${BOOST_COMPONENTS})
-if (Boost_FOUND)
-  include_directories (${Boost_INCLUDE_DIRS})
-endif ()
+if (BOOST_COMPONENTS)
+  find_package(Boost 1.71 REQUIRED COMPONENTS ${BOOST_COMPONENTS})
+else()
+  find_package(Boost 1.71 REQUIRED)
+endif()
 
 include(ExternalProject)
 set_property(DIRECTORY PROPERTY EP_STEP_TARGETS configure build test)
 
-set (Z3_TAG "z3-4.8.10" CACHE STRING "Z3 git tag to use")
+set (Z3_TAG "z3-4.13.3" CACHE STRING "Z3 git tag to use")
 set (Z3_REPO "https://github.com/Z3Prover/z3.git" CACHE STRING "Z3 repo")
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
   set (Z3_DEBUG "-d")
@@ -82,7 +88,6 @@ if (NOT Z3_FOUND)
   return()
 else()
   set_target_properties(z3 PROPERTIES EXCLUDE_FROM_ALL ON)
-  include_directories(${Z3_INCLUDE_DIR})
   message ("Found Z3 at ${Z3_EXECUTABLE}")
   # indicate that we want z3 binary to be included in the binary distribution
   install (PROGRAMS ${Z3_EXECUTABLE} DESTINATION bin)
@@ -114,16 +119,9 @@ if (EXISTS ${CMAKE_CURRENT_BINARY_DIR}/z3-prefix/src/z3/build)
 endif()
 
 find_package(OpenMP)
-if (OPENMP_FOUND)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-  #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fopenmp")
-endif()
 
 find_package(Gmp REQUIRED)
-if (GMP_FOUND)
-  include_directories (${GMP_INCLUDE_DIR})
-  include_directories (${GMPXX_INCLUDE_DIR})
-else()
+if (NOT GMP_FOUND)
   set(GMP_LIB "")
   set(GMPXX_LIB "")
 endif()
@@ -148,21 +146,26 @@ install(DIRECTORY ${CMAKE_BINARY_DIR}/include/
   )
 
 set(CMAKE_CXX_EXTENSIONS ON)
-add_definitions(-Wno-redeclared-class-member -Wno-sometimes-uninitialized)
-add_definitions(-Wno-covered-switch-default)
-add_definitions(-Wno-inconsistent-missing-override)
-set(CMAKE_CXX_STANDARD 11)
-if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
-  add_definitions( -Wno-unused-local-typedefs)
-endif ()
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(
+    -Wno-redeclared-class-member
+    -Wno-sometimes-uninitialized
+    -Wno-covered-switch-default
+    -Wno-inconsistent-missing-override
+  )
+elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+  add_compile_options(-Wno-unused-local-typedefs)
+endif()
 
-# add the include directory from the build tree
-include_directories(BEFORE ${CMAKE_CURRENT_BINARY_DIR}/include)
-
-### add our include directories to the front, overriding directories
-### specified by external packages.
-include_directories(BEFORE
+# Collect include dirs for use by targets in subdirectories
+set(HORNSPEC_INCLUDE_DIRS
   ${CMAKE_CURRENT_SOURCE_DIR}/include
-  ${CMAKE_CURRENT_BINARY_DIR}/include)
+  ${CMAKE_CURRENT_BINARY_DIR}/include
+  ${Z3_INCLUDE_DIR}
+  ${GMP_INCLUDE_DIR}
+  ${GMPXX_INCLUDE_DIR}
+)
 
 add_subdirectory(tools)
