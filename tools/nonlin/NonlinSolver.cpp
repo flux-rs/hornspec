@@ -63,7 +63,8 @@ int main (int argc, char ** argv)
         "                                       Sumanth Prabhu and Grigory Fedyukovich                                  \n\n" <<
         "Usage:                            Purpose:\n" <<
         "  hornspec [--help]                 show help\n" <<
-        "  hornspec [options] <CHC.smt2>     discover invariants/specifications for a CHC system\n\n" <<
+        "  hornspec [options] <CHC.smt2>     discover invariants/specifications for a CHC system\n" <<
+        "  hornspec [options] -              read CHC system from standard input\n\n" <<
         "Options:\n" <<
 //        "  --stren <NUM>                   number of strengthening iterations (by default, 1)          \n" <<
 //        "  --cex <NUM>                     search for counterexamples of given length                  \n" <<
@@ -95,11 +96,17 @@ int main (int argc, char ** argv)
     return 1;
   }
 
-  std::ifstream infile(argv[argc-1]);
-  if (!infile.good())
+  string inputArg = argv[argc-1];
+  bool useStdin = (inputArg == "-");
+
+  if (!useStdin)
   {
-    outs() << "Could not read file \"" << argv[argc-1] << "\"\n";
-    return 0;
+    std::ifstream infile(inputArg);
+    if (!infile.good())
+    {
+      outs() << "Could not read file \"" << inputArg << "\"\n";
+      return 0;
+    }
   }
 
   if (usesygus)
@@ -113,6 +120,15 @@ int main (int argc, char ** argv)
     }
   }
 
-  solveNonlin(string(argv[argc-1]), cex, str, maximal, relsOrder, !noGAS, usesygus, useUC, newenc, fixcrel, syguspath);
+  if (useStdin)
+  {
+    string content((std::istreambuf_iterator<char>(std::cin)),
+                    std::istreambuf_iterator<char>());
+    solveNonlinFromString(content, cex, str, maximal, relsOrder, !noGAS, usesygus, useUC, newenc, fixcrel, syguspath);
+  }
+  else
+  {
+    solveNonlin(inputArg, cex, str, maximal, relsOrder, !noGAS, usesygus, useUC, newenc, fixcrel, syguspath);
+  }
   return 0;
 }

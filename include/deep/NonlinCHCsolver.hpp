@@ -2427,6 +2427,29 @@ namespace ufo
     }
   };
 
+  inline void solveNonlinFromString(string content, int inv, int stren, bool maximal, const vector<string> & relsOrder, bool useGAS, bool usesygus, bool useUC, bool newenc, bool fixCRels, string syguspath)
+  {
+    ExprFactory m_efac;
+    EZ3 z3(m_efac);
+    CHCs ruleManager(m_efac, z3);
+    ruleManager.parseFromString(content);
+    NonlinCHCsolver nonlin(ruleManager, stren);
+
+    if (usesygus) {
+      nonlin.setSygusPath(syguspath);
+    }
+
+    if (inv == 0) {
+      if (maximal) {
+        nonlin.maximalSolve(useGAS, usesygus, useUC, fixCRels);
+      } else {
+        nonlin.nonmaximalSolve(useGAS, usesygus);
+      }
+    } else {
+      nonlin.solveIncrementally(inv);
+    }
+  };
+
   inline void solveNonlin(string smt, int inv, int stren, bool maximal, const vector<string> & relsOrder, bool useGAS, bool usesygus, bool useUC, bool newenc, bool fixCRels, string syguspath)
   {
     ExprFactory m_efac;

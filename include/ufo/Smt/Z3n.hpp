@@ -1028,6 +1028,30 @@ namespace ufo
 
         //TODO: vars
     }
+
+    void loadFPfromString(std::string content){
+        z3::ast_vector queries (ctx, Z3_fixedpoint_from_string(ctx, fp, content.c_str ()));
+        ctx.check_error ();
+
+        z3::ast_vector rules (ctx, Z3_fixedpoint_get_rules(ctx, fp));
+        z3::ast_vector asss (ctx, Z3_fixedpoint_get_assertions(ctx, fp));
+
+        for (unsigned i = 0; i < rules.size (); ++i){
+          Expr rule = z3.toExpr (rules [i]);
+          m_rules.push_back(rule);
+        }
+
+        for (unsigned i = 0; i < asss.size (); ++i){
+          Expr rule = z3.toExpr (asss [i]);
+          m_rules.push_back(rule);
+        }
+
+        for (unsigned i = 0; i < queries.size (); ++i){
+          m_queries.push_back(z3.toExpr (queries [i]));
+        }
+
+        //TODO: vars
+    }
   };
 
 

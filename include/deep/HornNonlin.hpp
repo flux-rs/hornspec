@@ -218,14 +218,18 @@ namespace ufo
       return true;
     }
 
-    void parse(string smt)
+    void parseFromString(string content)
     {
-      infile = smt;
+      infile = "<stdin>";
       std::unique_ptr<ufo::ZFixedPoint <EZ3> > m_fp;
       m_fp.reset (new ZFixedPoint<EZ3> (m_z3));
       ZFixedPoint<EZ3> &fp = *m_fp;
-      fp.loadFPfromFile(smt);
+      fp.loadFPfromString(content);
+      _parseRules(fp);
+    }
 
+    void _parseRules(ZFixedPoint<EZ3> &fp)
+    {
       for (auto &r: fp.m_rules)
       {
         chcs.push_back(HornRuleExt());
@@ -335,6 +339,16 @@ namespace ufo
 
       for (int i = 0; i < chcs.size(); i++)
         incms[chcs[i].dstRelation].push_back(i);
+    }
+
+    void parse(string smt)
+    {
+      infile = smt;
+      std::unique_ptr<ufo::ZFixedPoint <EZ3> > m_fp;
+      m_fp.reset (new ZFixedPoint<EZ3> (m_z3));
+      ZFixedPoint<EZ3> &fp = *m_fp;
+      fp.loadFPfromFile(smt);
+      _parseRules(fp);
     }
 
     
