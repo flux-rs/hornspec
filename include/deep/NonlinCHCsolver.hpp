@@ -33,7 +33,7 @@ namespace ufo
   }
 
   enum class Result_t {SAT=0, UNSAT, UNKNOWN};
-  
+
   class NonlinCHCsolver
   {
     private:
@@ -178,7 +178,7 @@ namespace ufo
 
     bool isFixedRel(const Expr & rel)
     {
-      return find(fixedRels.begin(), fixedRels.end(), rel) != fixedRels.end(); 
+      return find(fixedRels.begin(), fixedRels.end(), rel) != fixedRels.end();
     }
 
     void addFixedRel(Expr rel)
@@ -407,7 +407,7 @@ namespace ufo
               if (numTrueCands > 0 && !trueCands[i]) continue;
               if (isFixedRel(rels[i])) continue;
               Expr r = rels[i];
-	      
+
 	      // Expr modelphi = conjoin(curCnd, m_efac);
 
 	      // if (rels.size() == 1) {
@@ -423,7 +423,7 @@ namespace ufo
 	      // }
 
               if (!u.isSat(a, conjoin(curCnd, m_efac))) return; // need to recheck because the solver has been reset
-		
+
               if (processed.find(r) != processed.end()) continue;
 
               invVars.clear();
@@ -456,7 +456,7 @@ namespace ufo
 	      // 	outs() << "allvarsexcept: " << *v << "\n";
 	      // for (auto a : all)
 		// outs() << "all: " << *a << "\n";//DEBUG
-	      
+
               // in the case of nonlin, invVars is empty, so no renaming happens:
 
               preproGuessing(conjoin(all, m_efac), vars, invVars, backGuesses, true, false);
@@ -845,7 +845,7 @@ namespace ufo
             u.splitUnsatSets(finalExpr, t1, t2);
             for (int i = 0; i < hr.srcRelations.size(); i++) {
               Expr rel = hr.srcRelations[i];
-              
+
               for (auto itr =  annotations[rel].begin(); itr != annotations[rel].end();) {
                 Expr c = replaceAll(*itr, hr.srcVars[i], ruleManager.invVars[rel]);
                 if (find(t1.begin(), t1.end(), c) == t1.end()) {
@@ -1371,7 +1371,7 @@ namespace ufo
       sanitizeForDump(ds);
       sanitizeForDump(rs);
 
-      ofstream newsmtFile(newsmt);      
+      ofstream newsmtFile(newsmt);
       newsmtFile << ds << "\n" << rs << "\n";
       newsmtFile.close();
 
@@ -1483,7 +1483,7 @@ namespace ufo
     }
 
     Result_t checkMaximalSMT(ExprVector & weakenRels, ExprVector & fixedRels, map<Expr, Expr> & soln, ExprVector rels = ExprVector())
-    {            
+    {
       map<Expr, ExprVector> newVars;
       map<Expr, ExprVector> newVarsp;
       map<Expr, Expr> newCand;
@@ -1585,7 +1585,7 @@ namespace ufo
             forallArgs.push_back(v->left());
             allVars.insert(v);
           }
-          
+
           for (auto nv : newVars[hr.srcRelations[i]]) {
             // existsArgs.push_back(nv->left());
             allVars.insert(nv);
@@ -1632,7 +1632,7 @@ namespace ufo
       } else if (!res) {
         //	outs() << "result is us!\n";//DEBUG
         return Result_t::UNSAT;
-      } 
+      }
 
       //debug
       // u.printModel();
@@ -1647,7 +1647,7 @@ namespace ufo
         Expr weakerSoln = mk<OR>(conjoin(candidates[rel],m_efac), replaceAll(model, newVars[rel], ruleManager.invVars[rel]));
         soln.insert({rel, weakerSoln});
         // outs() << "weakersoln: " << *weakerSoln << "\n";//DEBUG
-      }	
+      }
 
       for (auto d : ruleManager.decls) {
         if (find(rels.begin(), rels.end(), d->left()) != rels.end()) continue;
@@ -1697,10 +1697,10 @@ namespace ufo
       return retRels;
     }
 
-    // Adds two new rules in addition to the rules present in 'oldsmt': 
+    // Adds two new rules in addition to the rules present in 'oldsmt':
     // 1) candidate[rel](invVars[rel]) => rel(invVars[rel])
     // 2) ~candidate[rel](invVars[rel]) /\ tmprel(invVars[rel]) => rel(invVars[rel])
-    // returns the name of the file where new rules are present 
+    // returns the name of the file where new rules are present
     string constructWeakeningRules(const ExprVector & weakenRels, const ExprVector & fixedRels)
     {
       stringstream newRules;
@@ -2075,7 +2075,7 @@ namespace ufo
         try {
           Expr funcAsserts = z3_from_smtlib(z3, smtstream.str());
           soln.insert({rel, replaceAll(funcAsserts, syvars[rel], ruleManager.invVars[rel])});
-          
+
         } catch (z3::exception &e){
           char str[3000];
           strncpy(str, e.msg(), 300);
@@ -2104,11 +2104,11 @@ namespace ufo
       if (res == Result_t::SAT) {
       	// outs() << "sygus proved s\n";
       	for (auto e : soln) {
-      	  if (find (fixedRels.begin(), fixedRels.end(), e.first) == fixedRels.end()) {	    
+      	  if (find (fixedRels.begin(), fixedRels.end(), e.first) == fixedRels.end()) {
       	      candidates[e.first].clear();
       	      candidates[e.first].insert(e.second);
       	  }
-      	}	
+      	}
       }
 
       //flip the result as caller expects unsat first time; argh!
@@ -2160,7 +2160,7 @@ namespace ufo
         }
 
         if (res == Result_t::UNSAT && rels.size() == 0) {
-          outs() << "Total iterations: "  << itr << "\n";
+          // outs() << "Total iterations: "  << itr << "\n";
           //debug
           for (auto hr : ruleManager.chcs) {
             if (!checkCHC(hr, candidates)) {
