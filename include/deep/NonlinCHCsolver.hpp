@@ -2214,6 +2214,13 @@ namespace ufo
         if (maxRes == Result_t::UNSAT) {
       //    outs() << "Total iterations: "  << itr << "\n";
 
+          if (firstSMTCall) {
+            // No interpretation of the relations satisfies all CHCs:
+            // the system is unsolvable (no valid invariant exists).
+            outs() << "sat\n";
+            return;
+          }
+
           //debug
           for (auto hr : ruleManager.chcs) {
             if (!checkCHC(hr, candidates)) {
@@ -2297,6 +2304,9 @@ namespace ufo
             candidates[ce.first].insert(ce.second);
           }
           res = Result_t::UNSAT;
+        } else if (res == Result_t::UNSAT) {
+          // No interpretation satisfies all CHCs: the system is unsolvable.
+          res = Result_t::SAT;
         } else {
           res = Result_t::UNKNOWN;
         }
