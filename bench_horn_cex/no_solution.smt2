@@ -1,5 +1,8 @@
-; A CHC system with no valid solution: k0(x,x) must hold (rule 1), but
-; k0(a,x) requires a = x+1 (rule 2), which is contradictory (x ≠ x+1).
+; A CHC system with no valid solution:
+; Rule 1 asserts k0(x, x) for all x.
+; Rule 2 says k0(a, x) AND NOT(a = x+1) => false.
+; Substituting a=x from rule 1: NOT(x = x+1) is always true (integers),
+; so rule 2 forces k0(x, x) => false for all x, contradicting rule 1.
 ; Expected output: sat
 (set-logic HORN)
 
